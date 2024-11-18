@@ -1,2 +1,2 @@
 # MessageAPI-AND-Websocket
-É um servidor de Websocket para o SVB, para manter conexão para mandar mensagens para diversos locais na web.
+É um servidor de REST API com Websocket junto para poder fazer a comunicação entre o server de TF2, Bot de Discord e outras plataformas futuras.
