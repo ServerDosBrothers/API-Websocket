@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
-async def get_token_header(token: Annotated[str, Header()]):
+    
+async def get_query_token(token: str):
     if token != str(os.getenv("API_TOKEN")):
-        raise HTTPException(status_code=400, detail="X-Token header invalid")
+        raise HTTPException(status_code=400, detail="Token invalid")
