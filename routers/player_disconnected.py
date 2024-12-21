@@ -18,5 +18,7 @@ class PlayerDisconnected(BaseModel):
 async def create_message(player_disconnected: PlayerDisconnected):
     for clientws in connected:
         if clientws == "tf2":
-            continue    
-        await connected[clientws].send_json(player_disconnected.model_dump_json())
+            continue   
+        json=player_disconnected.model_dump()
+        json["event_type"] = "player_disconnected" 
+        await connected[clientws].send_json(json)

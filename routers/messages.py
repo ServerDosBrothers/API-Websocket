@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel
 from .websocket import connected
-import starlette
 
 
 class Message(BaseModel):
     user: str
     content: str
     steamid: str
+    team: str
 
 router = APIRouter(
     prefix="/cm",
@@ -20,5 +20,6 @@ async def create_message(client: str, message: Message):
     for clientws in connected:
         if clientws == client:
             continue
-        
-        await connected[clientws].send_json(message.model_dump_json())
+        json=message.model_dump()
+        json["event_type"] = "message"
+        await connected[clientws].send_json(json)

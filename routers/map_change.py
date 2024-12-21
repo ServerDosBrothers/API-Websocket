@@ -18,4 +18,6 @@ async def create_message(map_change: MapChange):
     for clientws in connected:
         if clientws == "tf2":
             continue    
-        await connected[clientws].send_json(map_change.model_dump_json())
+        json=map_change.model_dump()
+        json["event_type"] = "mapchange"
+        await connected[clientws].send_json(json)

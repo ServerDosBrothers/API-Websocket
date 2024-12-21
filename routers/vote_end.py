@@ -17,4 +17,6 @@ async def create_message(vote_end: VoteEnd):
     for clientws in connected:
         if clientws == "tf2":
             continue    
-        await connected[clientws].send_json(vote_end.model_dump_json())
+        json=vote_end.model_dump()
+        json["event_type"] = "vote_end"
+        await connected[clientws].send_json(json)
