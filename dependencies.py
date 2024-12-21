@@ -7,4 +7,4 @@ load_dotenv()
     
 async def get_query_token(token: str):
     if token != str(os.getenv("API_TOKEN")):
-        raise HTTPException(status_code=400, detail="Token invalid")
+        raise HTTPException(status_code=401, detail="Token invalid")
