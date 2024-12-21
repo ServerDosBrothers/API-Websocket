@@ -6,7 +6,6 @@ import starlette
 router = APIRouter(
     prefix="/pc",
     tags=["player_connected"],
-    dependencies=[Depends(get_token_header)],
     responses={404: {"message":"This request was invalid"}},
 )
 
