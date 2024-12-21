@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from pydantic import BaseModel
 from .websocket import connected
-from ..dependencies import get_token_header
 import starlette
 
 
