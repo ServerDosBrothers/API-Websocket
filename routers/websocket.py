@@ -17,6 +17,6 @@ async def websocket_endpoint(client: str, websocket: WebSocket):
     while True:
         try:
             data=await websocket.receive_json()
-        except starlette.websockets.WebSocketDisconnect as e:
+        except starlette.websockets.WebSocketClose as e:
             print(f"Websocket desconectou: {e}")
             del connected[client]
