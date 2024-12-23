@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel
-from .websocket import connected
-
+from .websocket import websockets, isConnected
+from ..logger import logger
 
 class Message(BaseModel):
     user: str
@@ -13,13 +13,27 @@ router = APIRouter(
     prefix="/cm",
     tags=["message"],
     responses={404: {"message":"This request was invalid"}},
-)
+)           
 
-@router.post("/{client}")
+@router.post("/{client}", status_code=201)
 async def create_message(client: str, message: Message):
-    for clientws in connected:
+    json=message.model_dump()
+    for clientws in websockets:
         if clientws == client:
             continue
         json=message.model_dump()
         json["event_type"] = "message"
-        await connected[clientws].send_json(json)
+        
+        try:
+            await websockets[clientws]["ws"].send_json(json)
+        except RuntimeError:
+            logger.info(f"Envio pro cliente websocket {clientws} falhou, tornando a conexão como desconectada...")
+            websockets[clientws]["connected"] = False
+            
+    recipients=isConnected(websockets)
+    return {
+            "message": message.model_dump(),
+            "recipients": recipients          
+            }
+        
+        

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from pydantic import BaseModel
+from ..logger import logger
 import starlette.websockets
 
 router = APIRouter(
@@ -8,15 +9,23 @@ router = APIRouter(
     responses={404: {"message":"This request was invalid"}},
 )
 
-connected={}
+websockets={}
 
 @router.websocket("/{client}")
 async def websocket_endpoint(client: str, websocket: WebSocket):
     await websocket.accept()
-    connected[client]=websocket
+    websockets[client]={"ws": websocket, "connected": True}
     while True:
         try:
             data=await websocket.receive_json()
-        except starlette.websockets.WebSocketClose as e:
-            print(f"Websocket desconectou: {e}")
-            del connected[client]
+        except starlette.websockets.WebSocketDisconnect:
+            logger.info(f"Cliente {client} desconectou.")
+            break
+            
+def isConnected(websockets):
+    connected=[]
+    for i in websockets:
+        if websockets[i]["connected"]:
+            connected.append(i)
+            
+    return connected

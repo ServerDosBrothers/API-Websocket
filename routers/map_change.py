@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from .websocket import connected
-import starlette
+from .websocket import websockets
+from ..logger import logger
+from .websocket import websockets, isConnected
+
 
 router = APIRouter(
     prefix="/mc",
@@ -13,11 +15,23 @@ class MapChange(BaseModel):
     did_map_end: bool
     map_name: str
 
-@router.post("/")
-async def create_message(map_change: MapChange):
-    for clientws in connected:
+@router.post("/", status_code=201)
+async def map_change(map_change: MapChange, status_code=201):
+    json=map_change.model_dump()
+    for clientws in websockets:
         if clientws == "tf2":
             continue    
-        json=map_change.model_dump()
         json["event_type"] = "mapchange"
-        await connected[clientws].send_json(json)
+        try:
+            await websockets[clientws]["ws"].send_json(json)
+        except RuntimeError:
+            logger.info(f"Envio pro cliente websocket {clientws} falhou, tornando a conexão como desconectada...")
+            websockets[clientws]["connected"] = False
+    
+    recipients=isConnected(websockets)
+    if "tf2" in recipients:
+        recipients.remove("tf2")
+    return {
+            "map_change": map_change.model_dump(),
+            "recipients": recipients          
+            }

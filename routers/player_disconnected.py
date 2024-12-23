@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from .websocket import connected
-import starlette
+from .websocket import websockets
+from ..logger import logger
+from .websocket import websockets, isConnected
+
 
 router = APIRouter(
     prefix="/pd",
@@ -14,11 +16,23 @@ class PlayerDisconnected(BaseModel):
     steamid: str
     reason: str
     
-@router.post("/")
-async def create_message(player_disconnected: PlayerDisconnected):
-    for clientws in connected:
+@router.post("/", status_code=201)
+async def player_disconnected(player_disconnected: PlayerDisconnected, status_code=201):
+    json=player_disconnected.model_dump()
+    for clientws in websockets:
         if clientws == "tf2":
             continue   
-        json=player_disconnected.model_dump()
         json["event_type"] = "player_disconnected" 
-        await connected[clientws].send_json(json)
+        try:
+            await websockets[clientws]["ws"].send_json(json)
+        except RuntimeError:
+            logger.info(f"Envio pro cliente websocket {clientws} falhou, tornando a conexão como desconectada...")
+            websockets[clientws]["connected"] = False
+    
+    recipients=isConnected(websockets)
+    if "tf2" in recipients:
+        recipients.remove("tf2")
+    return {
+            "player_disconnected": player_disconnected.model_dump(),
+            "recipients": recipients          
+            }
