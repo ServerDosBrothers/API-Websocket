@@ -12,6 +12,12 @@ MYSQL_PORT = os.getenv("MYSQL_PORT")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 SQLEngine=create_engine(f"mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_URL}:{MYSQL_PORT}/{MYSQL_DATABASE}")
 
+
+def insert_into_database(session, data):
+    session.add(data)
+    session.commit()
+    session.refresh(data)
+
 def create_db_and_tables():
     SQLModel.metadata.create_all(SQLEngine)
     
