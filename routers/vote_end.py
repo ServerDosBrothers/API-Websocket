@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from .websocket import websockets
-from ..logger import logger
+from ..utils.logger import logger
 from .websocket import websockets, isConnected
 
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from pydantic import BaseModel
-from ..logger import logger
+from ..utils.logger import logger
 import starlette.websockets
 
 router = APIRouter(
