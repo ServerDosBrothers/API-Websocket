@@ -6,5 +6,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi[standard]>=0.115.6",
+    "mysqlclient>=2.2.6",
+    "pkgconfig>=1.5.5",
+    "sqlmodel>=0.0.22",
     "websockets>=14.1",
 ]
