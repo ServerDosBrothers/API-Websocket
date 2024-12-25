@@ -1,13 +1,19 @@
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter
+from datetime import datetime
+from sqlmodel import Field, SQLModel
+from typing import Optional
 from pydantic import BaseModel
 from .websocket import websockets, isConnected
-from ..logger import logger
+from ..utils.logger import logger
+from ..utils.database import SessionDep
 
-class Message(BaseModel):
-    user: str
-    content: str
-    steamid: str
-    team: str
+class Message(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user: str = Field(index=True)
+    content: str = Field(index=True)
+    steamid: Optional[str] = Field(default=None, index=True)
+    team: Optional[str] = Field(default=None, index=True)
+    created: Optional[datetime] = Field(index=True)
 
 router = APIRouter(
     prefix="/cm",
@@ -16,8 +22,12 @@ router = APIRouter(
 )           
 
 @router.post("/{client}", status_code=201)
-async def create_message(client: str, message: Message):
+async def create_message(client: str, message: Message, session: SessionDep):
     json=message.model_dump()
+    message.created = datetime.now()
+    session.add(message)
+    session.commit()
+    session.refresh(message)
     for clientws in websockets:
         if clientws == client:
             continue
